@@ -50,10 +50,9 @@ struct Useful {
         return CGPoint(x: dx, y: dy)
     }
     
-    static func generateCheckerboardImage(size: CGSize, color: UIColor = .white.withAlphaComponent(0.1)) -> UIImage {
+    static func generateCheckerboardImage(size: CGSize, color: UIColor = .white) -> UIImage {
         let renderer = UIGraphicsImageRenderer(size: size)
         let img = renderer.image { ctx in
-            ctx.cgContext.setFillColor(color.cgColor)
             
             let cellSize = size * (1/4)
             
@@ -61,7 +60,8 @@ struct Useful {
                 for col in 0 ... Int(cellSize.width) {
                     if (row + col) % 2 == 0 {
                         let position = CGPoint(x: CGFloat(col), y: CGFloat(row))
-                        let randomSize = cellSize * CGFloat.random(in: 1...1.1)
+                        let randomSize = cellSize * CGFloat.random(in: 1.1...1.5)
+                        ctx.cgContext.setFillColor(color.withAlphaComponent(.random(in: 0.05...0.1)).cgColor)
                         ctx.cgContext.fill(CGRect(x: position.x * cellSize.width, y: position.y * cellSize.height, width: randomSize.width, height: randomSize.height))
                     }
                 }

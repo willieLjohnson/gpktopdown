@@ -36,7 +36,7 @@ class EntitiesScene: BaseScene {
     }
     
     
-    func generateBackgroundImage(color: UIColor = .black.withAlphaComponent(0.1), result: @escaping (SKSpriteNode) -> Void) {
+    func generateBackgroundImage(color: UIColor = .black, result: @escaping (SKSpriteNode) -> Void) {
         let generatedImage = Useful.generateCheckerboardImage(size: self.backgroundSize, color: color)
         let background = SKSpriteNode(texture: SKTexture(image: generatedImage))
         background.name = "background"
@@ -54,7 +54,7 @@ class EntitiesScene: BaseScene {
         DispatchQueue.global(qos: .userInteractive).async {
             for x in 0...1 {
                 for y in 0...1 {
-                    self.generateBackgroundImage(color: .black.withAlphaComponent(0.1 + CGFloat((x + y) / 4))) { generatedBackground in
+                    self.generateBackgroundImage() { generatedBackground in
                         let xPosition = CGFloat(x) * self.backgroundSize.width
                         let yPosition = CGFloat(y) * self.backgroundSize.height
                         generatedBackground.position = CGPoint(x: xPosition, y: yPosition)
@@ -65,11 +65,6 @@ class EntitiesScene: BaseScene {
                 }
             }
         }
-        
-        
-        //        background.size = frame.size
-        //        background.position = CGPoint(x: frame.midX, y: frame.midY)
-        //        addChild(background)
         
         createLabel("■ Player: Visual, Attack, Control", color: SKColor.cyan, order: 0)
         createLabel("■ Boss: Visual, Attack, Intelligence", color: SKColor.magenta, order: 2)
