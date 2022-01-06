@@ -22,6 +22,22 @@
 		2F3D61E42786F38200FFD35B /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61BE2786F37F00FFD35B /* GameScene.swift */; };
 		2F3D61E52786F38200FFD35B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F3D61BF2786F38200FFD35B /* Assets.xcassets */; };
 		2F3D61E62786F38200FFD35B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2F3D61BF2786F38200FFD35B /* Assets.xcassets */; };
+		2F3D61F52786F41400FFD35B /* Useful.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61EF2786F41300FFD35B /* Useful.swift */; };
+		2F3D61F62786F41400FFD35B /* Useful.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61EF2786F41300FFD35B /* Useful.swift */; };
+		2F3D61F72786F41400FFD35B /* ControlComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F02786F41300FFD35B /* ControlComponent.swift */; };
+		2F3D61F82786F41400FFD35B /* ControlComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F02786F41300FFD35B /* ControlComponent.swift */; };
+		2F3D61F92786F41400FFD35B /* IntelligenceComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F12786F41300FFD35B /* IntelligenceComponent.swift */; };
+		2F3D61FA2786F41400FFD35B /* IntelligenceComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F12786F41300FFD35B /* IntelligenceComponent.swift */; };
+		2F3D61FB2786F41400FFD35B /* VisualComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F22786F41300FFD35B /* VisualComponent.swift */; };
+		2F3D61FC2786F41400FFD35B /* VisualComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F22786F41300FFD35B /* VisualComponent.swift */; };
+		2F3D61FD2786F41400FFD35B /* EntitiesScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F32786F41400FFD35B /* EntitiesScene.swift */; };
+		2F3D61FE2786F41400FFD35B /* EntitiesScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F32786F41400FFD35B /* EntitiesScene.swift */; };
+		2F3D61FF2786F41400FFD35B /* AttackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F42786F41400FFD35B /* AttackComponent.swift */; };
+		2F3D62002786F41400FFD35B /* AttackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D61F42786F41400FFD35B /* AttackComponent.swift */; };
+		2F3D62022786F46100FFD35B /* BaseScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D62012786F46000FFD35B /* BaseScene.swift */; };
+		2F3D62032786F46100FFD35B /* BaseScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D62012786F46000FFD35B /* BaseScene.swift */; };
+		2F3D62052786F5E700FFD35B /* AnalogJoystick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D62042786F5E600FFD35B /* AnalogJoystick.swift */; };
+		2F3D62062786F5E700FFD35B /* AnalogJoystick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D62042786F5E600FFD35B /* AnalogJoystick.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +55,14 @@
 		2F3D61D92786F38200FFD35B /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		2F3D61DC2786F38200FFD35B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2F3D61DE2786F38200FFD35B /* gpktopdown_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = gpktopdown_macOS.entitlements; sourceTree = "<group>"; };
+		2F3D61EF2786F41300FFD35B /* Useful.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Useful.swift; sourceTree = "<group>"; };
+		2F3D61F02786F41300FFD35B /* ControlComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ControlComponent.swift; sourceTree = "<group>"; };
+		2F3D61F12786F41300FFD35B /* IntelligenceComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntelligenceComponent.swift; sourceTree = "<group>"; };
+		2F3D61F22786F41300FFD35B /* VisualComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisualComponent.swift; sourceTree = "<group>"; };
+		2F3D61F32786F41400FFD35B /* EntitiesScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitiesScene.swift; sourceTree = "<group>"; };
+		2F3D61F42786F41400FFD35B /* AttackComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttackComponent.swift; sourceTree = "<group>"; };
+		2F3D62012786F46000FFD35B /* BaseScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseScene.swift; sourceTree = "<group>"; };
+		2F3D62042786F5E600FFD35B /* AnalogJoystick.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnalogJoystick.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +99,14 @@
 				2F3D61BC2786F37F00FFD35B /* Actions.sks */,
 				2F3D61BD2786F37F00FFD35B /* GameScene.sks */,
 				2F3D61BE2786F37F00FFD35B /* GameScene.swift */,
+				2F3D61F42786F41400FFD35B /* AttackComponent.swift */,
+				2F3D61F02786F41300FFD35B /* ControlComponent.swift */,
+				2F3D62012786F46000FFD35B /* BaseScene.swift */,
+				2F3D61F32786F41400FFD35B /* EntitiesScene.swift */,
+				2F3D61F12786F41300FFD35B /* IntelligenceComponent.swift */,
+				2F3D62042786F5E600FFD35B /* AnalogJoystick.swift */,
+				2F3D61EF2786F41300FFD35B /* Useful.swift */,
+				2F3D61F22786F41300FFD35B /* VisualComponent.swift */,
 				2F3D61BF2786F38200FFD35B /* Assets.xcassets */,
 			);
 			path = "gpktopdown Shared";
@@ -216,9 +248,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F3D61FF2786F41400FFD35B /* AttackComponent.swift in Sources */,
 				2F3D61E32786F38200FFD35B /* GameScene.swift in Sources */,
+				2F3D61FD2786F41400FFD35B /* EntitiesScene.swift in Sources */,
+				2F3D62052786F5E700FFD35B /* AnalogJoystick.swift in Sources */,
 				2F3D61CA2786F38200FFD35B /* GameViewController.swift in Sources */,
 				2F3D61C82786F38200FFD35B /* AppDelegate.swift in Sources */,
+				2F3D61F52786F41400FFD35B /* Useful.swift in Sources */,
+				2F3D61FB2786F41400FFD35B /* VisualComponent.swift in Sources */,
+				2F3D61F92786F41400FFD35B /* IntelligenceComponent.swift in Sources */,
+				2F3D61F72786F41400FFD35B /* ControlComponent.swift in Sources */,
+				2F3D62022786F46100FFD35B /* BaseScene.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,9 +266,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F3D62002786F41400FFD35B /* AttackComponent.swift in Sources */,
 				2F3D61E42786F38200FFD35B /* GameScene.swift in Sources */,
+				2F3D61FE2786F41400FFD35B /* EntitiesScene.swift in Sources */,
+				2F3D62062786F5E700FFD35B /* AnalogJoystick.swift in Sources */,
 				2F3D61DA2786F38200FFD35B /* GameViewController.swift in Sources */,
 				2F3D61D82786F38200FFD35B /* AppDelegate.swift in Sources */,
+				2F3D61F62786F41400FFD35B /* Useful.swift in Sources */,
+				2F3D61FC2786F41400FFD35B /* VisualComponent.swift in Sources */,
+				2F3D61FA2786F41400FFD35B /* IntelligenceComponent.swift in Sources */,
+				2F3D61F82786F41400FFD35B /* ControlComponent.swift in Sources */,
+				2F3D62032786F46100FFD35B /* BaseScene.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

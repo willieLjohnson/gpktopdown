@@ -10,19 +10,20 @@ import SpriteKit
 import GameplayKit
 
 class GameViewController: UIViewController {
+    var scene: EntitiesScene!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let scene = GameScene.newGameScene()
-
         // Present the scene
         let skView = self.view as! SKView
-        skView.presentScene(scene)
         
         skView.ignoresSiblingOrder = true
         skView.showsFPS = true
         skView.showsNodeCount = true
+        
+        scene = EntitiesScene(size: skView.frame.size)
+        
+        skView.presentScene(scene)
     }
 
     override var shouldAutorotate: Bool {
