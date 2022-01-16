@@ -10,12 +10,23 @@ import UIKit
 import SpriteKit
 import GameplayKit
 
-class ControlComponent: GKComponent {
+class ControllerComponent: GKAgent2D, GKAgentDelegate {
+    var moveStick: Joystick
+    
     var cruiseControl: Bool = true
     var cruiseAmount: CGFloat = 0.5
     var previousDirection: CGVector = CGVector.zero
     
-    func touch(_ node: SKNode, location: CGPoint, joystick: AnalogJoystick?) {
+    init(_ moveStick: Joystick) {
+        self.moveStick = moveStick
+        super.init()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func touch(_ node: SKNode, location: CGPoint, joystick: Joystick?) {
         guard let entity = entity else { return }
         guard let visualComponent = entity.component(ofType: VisualComponent.self) else { return }
         
@@ -26,21 +37,25 @@ class ControlComponent: GKComponent {
         }
     }
     
-    func handleJoystick(_ joystick: AnalogJoystick) {
+    override func update(deltaTime seconds: TimeInterval) {
+        handleJoysticks()
+    }
+    
+    func handleJoysticks() {
         guard let entity = entity else { return }
         guard let visualComponent = entity.component(ofType: VisualComponent.self) else { return }
         
-        joystick.beginHandler = {
+        moveStick.onStart = {
             self.cruiseControl = false
         }
         
-        joystick.stopHandler = {
+        moveStick.onEnd = {
             self.cruiseControl = true
         }
         
-        joystick.trackingHandler = { data in
-            visualComponent.accelerate(data.velocity)
-            self.previousDirection = data.velocity
+        moveStick.onMove = { data in
+            visualComponent.accelerate(data.vector)
+            self.previousDirection = data.vector
         }
         
         if cruiseControl {

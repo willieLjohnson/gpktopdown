@@ -1,5 +1,5 @@
 //
-//  EntitiesScene.swift
+//  MainScene.swift
 //  gpktopdown
 //
 //  Created by Willie Liwa Johnson on 1/6/22.
@@ -14,10 +14,12 @@ struct World {
     static let FRICTION = 0.5
 }
 
-class EntitiesScene: BaseScene {
-    var player: GKEntity!
-    var enemies = [GKEntity]()
+class MainScene: Scene {
+    var entityManager: EntityManager!
+    var player: Player!
+    
     var boss: GKEntity!
+    var enemies = [GKEntity]()
     
     var backgroundSize: CGSize = .zero
     var gridCount: CGFloat = 2
@@ -25,35 +27,45 @@ class EntitiesScene: BaseScene {
         backgroundSize * gridCount
     }
     
-    let intelligenceSystem = GKComponentSystem(componentClass: IntelligenceComponent.self)
+    let intelligenceSystem = IntelligenceSystem(componentClass: IntelligenceComponent.self)
     
-    let movePlayerStick = AnalogJoystick(diameters: (135, 100))
-    var playerControlComponent: ControlComponent {
-        player.component(ofType: ControlComponent.self)!
+    let movePlayerStick = Joystick(diameters: (135, 100))
+
+    let obstacles = [GKCircleObstacle(radius: 100),
+                     GKCircleObstacle(radius: 100),
+                     GKCircleObstacle(radius: 100),
+                     GKCircleObstacle(radius: 100)]
+    
+    var selectionMode = SelectionMode.None
+    
+    override func didMove(to view: SKView) {
+        entityManager = EntityManager(scene: self)
+        setupUI()
+        createPlayer()
+        createSceneContents()
     }
-    var playerVisualComponent: VisualComponent {
-        player.component(ofType: VisualComponent.self)!
+    
+    override func createSceneContents() {
+        createEnemies()
+        createBoss()
+        
+        drawObstacles()
+        
+        obstacles[0].position = vector_float2(-200, -200)
+        obstacles[1].position = vector_float2(-200, 200)
+        obstacles[2].position = vector_float2(200, -200)
+        obstacles[3].position = vector_float2(200, 200)
+        
+        drawObstacles()
     }
     
 
-    override func createSceneContents() {
-        generateBackgroundGrid()
-        setupUI()
-        
-        createPlayer()
-        createEnemies()
-        createBoss()
-    }
-    
     override func update(_ currentTime: TimeInterval) {
         super.update(currentTime)
         
-        player.update(deltaTime: deltaTime)
+        entityManager.update(deltaTime)
         
-        playerControlComponent.handleJoystick(movePlayerStick)
-        intelligenceSystem.update(deltaTime: deltaTime)
-        
-        guard let playerPhysicsBody = playerVisualComponent.physicsBody else { return }
+        guard let playerPhysicsBody = player.sprite.physicsBody else { return }
         guard let camera = self.camera else { return }
         
         // Move cam to player
@@ -70,8 +82,7 @@ class EntitiesScene: BaseScene {
         //CGPoint(x: playerVisualComponent.sprite.position.x + xOffset, y: playerVisualComponent.sprite.position.y + yOffset)
 //        camera.run(SKAction.move(to: playerVisualComponent.sprite.position, duration: 0.005))
     
-        let playerSprite = playerVisualComponent.sprite
-        camera.position = playerSprite.position
+        camera.position = player.sprite.position
         
         self.enumerateChildNodes(withName: "background", using: ({
             (node, error) in
@@ -87,17 +98,17 @@ class EntitiesScene: BaseScene {
             
             var newPosition = node.position
             
-            if playerPhysicsBody.velocity.dx > 0 && node.position.x < (playerSprite.position.x - limitX)  {
+            if playerPhysicsBody.velocity.dx > 0 && node.position.x < (self.player.position.x - limitX)  {
                 newPosition.x += self.backgroundGridSize.width
             }
-            if playerPhysicsBody.velocity.dy > 0 && node.position.y < (playerSprite.position.y - limitY)  {
+            if playerPhysicsBody.velocity.dy > 0 && node.position.y < (self.player.position.y - limitY)  {
                 newPosition.y += self.backgroundGridSize.height
             }
             
-            if playerPhysicsBody.velocity.dx < 0 && node.position.x > (playerSprite.position.x + limitX)  {
+            if playerPhysicsBody.velocity.dx < 0 && node.position.x > (self.player.position.x + limitX)  {
                 newPosition.x -= self.backgroundGridSize.width
             }
-            if playerPhysicsBody.velocity.dy < 0 && node.position.y > (playerSprite.position.y + limitY)  {
+            if playerPhysicsBody.velocity.dy < 0 && node.position.y > (self.player.position.y + limitY)  {
                 newPosition.y -= self.backgroundGridSize.height
             }
             
@@ -106,14 +117,86 @@ class EntitiesScene: BaseScene {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else { return }
-        let location = touch.location(in: self)
-        let node = atPoint(location)
+        guard let touchPosition = touches.first?.location(in: self) else {
+            return
+        }
+        
+        let adjustedTouchLocation = vector_float2(Float(touchPosition.x - frame.width / 2),
+                                                  Float(touchPosition.y - frame.height / 2))
+    
+        
+        for (index, obstacle) in obstacles.enumerated()
+        {
+            let distToObstacle = hypot(adjustedTouchLocation.x - obstacle.position.x,
+                                       adjustedTouchLocation.y - obstacle.position.y)
+            
+            if distToObstacle < obstacle.radius
+            {
+                selectionMode = .Obstacle(index: index)
+                return
+            }
+        }
+        
+        selectionMode = .None
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touchPosition = touches.first?.location(in: self) else
+        {
+            return
+        }
+        
+        let adjustedTouchLocation = vector_float2(Float(touchPosition.x - frame.width / 2),
+                                                  Float(touchPosition.y - frame.height / 2))
+        
+        switch selectionMode
+        {
+        case .None:
+            return
+//            drawSeekGoals()
+        case .Obstacle(let idx):
+            obstacles[idx].position = adjustedTouchLocation
+            drawObstacles()
+        }
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        selectionMode = .None
     }
 }
 
 // MARK: - Entitites scene methods
-private extension EntitiesScene {
+private extension MainScene {
+    
+//    func drawSeekGoals()
+//    {
+//
+//        seekGoalsLayer.strokeColor = UIColor.blue.cgColor
+//        seekGoalsLayer.fillColor = nil
+//        seekGoalsLayer.lineWidth = 2
+//
+//        let bezierPath = UIBezierPath()
+//
+//        for seekTarget in targets
+//        {
+//            bezierPath.appendCircleOfRadius(radius: seekTarget.radius,
+//                                            atPosition: seekTarget.position,
+//                                            inFrame: frame)
+//        }
+//
+//        seekGoalsLayer.path = bezierPath.cgPath
+//    }
+    
+    func drawObstacles() {
+        for obstacle in obstacles {
+            let obstacleShape = SKShapeNode(circleOfRadius: CGFloat(obstacle.radius))
+            obstacleShape.strokeColor = SKColor.red
+            obstacleShape.position = CGPoint(x: CGFloat(obstacle.position.x), y: CGFloat(obstacle.position.y))
+            addChild(obstacleShape)
+        }
+    }
+    
+    
     func generateBackgroundImage(color: UIColor = .black, result: @escaping (SKSpriteNode) -> Void) {
         let (generatedImage, _) = Useful.generateCheckerboardImage(size: self.backgroundSize, color: color)
         let background = SKSpriteNode(texture: SKTexture(image: generatedImage))
@@ -157,47 +240,31 @@ private extension EntitiesScene {
         cam.zPosition = 2000
         self.camera = cam
         addChild(cam)
+        
+        generateBackgroundGrid()
     }
     
 
     
     func createPlayer() {
-        player = GKEntity()
-        let playerSize = CGSize(width: 30.0, height: 30.0)
-        
-        let visualComponent = VisualComponent(color: SKColor.cyan, size: playerSize)
-        visualComponent.position = center
-        
-        let physicsBody  = SKPhysicsBody(rectangleOf: CGSize(width: 35.0, height: 35.0))
-        physicsBody.affectedByGravity = false
-        physicsBody.linearDamping = World.FRICTION
-        visualComponent.sprite.physicsBody = physicsBody
-        
-        
-        player.addComponent(visualComponent)
-        addChild(visualComponent.sprite)
-        
-        let attackComponent = AttackComponent()
-        player.addComponent(attackComponent)
-        
-        let controlComponent = ControlComponent()
-        controlComponent.handleJoystick(movePlayerStick)
-        player.addComponent(controlComponent)
+        player = Player(position: center, moveStick: movePlayerStick)
+        entityManager.add(player)
     }
     
     func createEnemies() {
-        for _ in 0..<20 {
+        for i in 0..<20 {
             let enemy = GKEntity()
             enemies.append(enemy)
             
             let visualComponent = VisualComponent(color: SKColor.yellow, size: CGSize(width: 20.0, height: 20.0))
             visualComponent.position = randomPosition()
             enemy.addComponent(visualComponent)
-            addChild(visualComponent.sprite)
             
-            let intelligenceComponent = IntelligenceComponent()
+            let intelligenceComponent = IntelligenceComponent(name: "enemy-\(i)", target: player.comps.controller, avoid: intelligenceSystem.agents)
             enemy.addComponent(intelligenceComponent)
             intelligenceSystem.addComponent(intelligenceComponent)
+            
+            entityManager.add(enemy)
         }
     }
     
@@ -207,14 +274,15 @@ private extension EntitiesScene {
         let visualComponent = VisualComponent(color: SKColor.magenta, size: CGSize(width: 50.0, height: 50.0))
         visualComponent.position = randomPosition()
         boss.addComponent(visualComponent)
-        addChild(visualComponent.sprite)
         
         let attackComponent = AttackComponent()
         boss.addComponent(attackComponent)
         
-        let intelligenceComponent = IntelligenceComponent()
+        let intelligenceComponent = IntelligenceComponent(name: "boss", target: player.comps.controller, avoid: intelligenceSystem.agents)
         boss.addComponent(intelligenceComponent)
         intelligenceSystem.addComponent(intelligenceComponent)
+        
+        entityManager.add(boss)
     }
     
     func randomPosition() -> CGPoint {
@@ -222,4 +290,9 @@ private extension EntitiesScene {
         let y = GKRandomDistribution(lowestValue: 50, highestValue: Int(frame.maxY) - 50).nextInt()
         return CGPoint(x: CGFloat(x), y: CGFloat(y))
     }
+}
+
+enum SelectionMode {
+    case None
+    case Obstacle(index: Int)
 }

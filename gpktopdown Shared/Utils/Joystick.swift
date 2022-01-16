@@ -1,31 +1,31 @@
 //
-//  AnalogStick.swift
-//  Joystick
+//  Joystick.swift
+//  gpktopdown
 //
-//  Created by Dmitriy Mitrophanskiy on 28.09.14.
+//  Created by Willie Liwa Johnson on 1/16/22.
 //
-//
+
 import SpriteKit
 
-//MARK: AnalogJoystickData
-public struct AnalogJoystickData: CustomStringConvertible {
-    var velocity = CGVector.zero,
+//MARK: StickData
+public struct StickData: CustomStringConvertible {
+    var vector = CGVector.zero,
     angular = CGFloat(0),
     centered = false
     
     mutating func reset() {
-        velocity = CGVector.zero
+        vector = CGVector.zero
         angular = 0
         centered = true
     }
     
     public var description: String {
-        return "AnalogStickData(velocity: \(velocity), angular: \(angular))"
+        return "StickData(velocity: \(vector), angular: \(angular))"
     }
 }
 
-//MARK: - AnalogJoystickComponent
-open class AnalogJoystickComponent: SKSpriteNode {
+//MARK: - StickComponent
+open class StickComponent: SKSpriteNode {
     private var kvoContext = UInt8(1)
     var borderWidth = CGFloat(0) {
         didSet {
@@ -65,7 +65,6 @@ open class AnalogJoystickComponent: SKSpriteNode {
         }
     }
     
-    //MARK: - DESIGNATED
     init(diameter: CGFloat, color: UIColor? = nil, image: UIImage? = nil) {
         super.init(texture: nil, color: color ?? UIColor.black, size: CGSize(width: diameter, height: diameter))
         addObserver(self, forKeyPath: "color", options: NSKeyValueObservingOptions.old, context: &kvoContext)
@@ -113,30 +112,26 @@ open class AnalogJoystickComponent: SKSpriteNode {
     }
 }
 
-//MARK: - AnalogJoystickSubstrate
-open class AnalogJoystickSubstrate: AnalogJoystickComponent {
-    // coming soon...
-}
+//MARK: - StickSubstrate
+open class StickSubstrate: StickComponent {}
 
-//MARK: - AnalogJoystickStick
-open class AnalogJoystickStick: AnalogJoystickComponent {
-    // coming soon...
-}
+//MARK: - Stick
+open class Stick: StickComponent {}
 
-//MARK: - AnalogJoystick
-open class AnalogJoystick: SKNode {
-    var trackingHandler: ((AnalogJoystickData) -> ())?
-    var beginHandler: (() -> Void)?
-    var stopHandler: (() -> Void)?
-    var substrate: AnalogJoystickSubstrate!
-    var stick: AnalogJoystickStick!
-    var isTouched: Bool = false
-    private var tracking = false
-    private(set) var data = AnalogJoystickData()
+//MARK: - Joystick
+open class Joystick: SKNode {
+    var onMove: ((StickData) -> ())?
+    var onStart: (() -> Void)?
+    var onEnd: (() -> Void)?
+    var substrate: StickSubstrate!
+    var stick: Stick!
+    private var moving = false
+    private(set) var data = StickData()
     
-    var isCentered: Bool {
+    var centered: Bool {
         data.centered
     }
+    
     var disabled: Bool {
         get {
             return !isUserInteractionEnabled
@@ -162,6 +157,29 @@ open class AnalogJoystick: SKNode {
         }
     }
     
+    var colors: (substrate: UIColor, stick: UIColor) {
+        get {
+            return (substrate: substrate.color, stick: stick.color)
+        }
+        
+        set(newColors) {
+            substrate.color = newColors.substrate
+            stick.color = newColors.stick
+        }
+    }
+    
+    
+    var images: (substrate: UIImage?, stick: UIImage?)? {
+        get {
+            return (substrate: substrate.image, stick: stick.image)
+        }
+        
+        set(newImages) {
+            substrate.image = newImages?.substrate
+            stick.image = newImages?.stick
+        }
+    }
+    
     var radius: CGFloat {
         get {
             return diameter * 0.5
@@ -172,7 +190,7 @@ open class AnalogJoystick: SKNode {
         }
     }
     
-    init(substrate: AnalogJoystickSubstrate, stick: AnalogJoystickStick) {
+    init(substrate: StickSubstrate, stick: Stick) {
         super.init()
         self.substrate = substrate
         substrate.zPosition = 0
@@ -185,16 +203,19 @@ open class AnalogJoystick: SKNode {
         velocityLoop.add(to: .current, forMode: .common)
     }
     
-    convenience init(diameters: (substrate: CGFloat, stick: CGFloat?), colors: (substrate: UIColor?, stick: UIColor?)? = nil, images: (substrate: UIImage?, stick: UIImage?)? = nil) {
-        let stickDiameter = diameters.stick ?? diameters.substrate * 0.6,
-        jColors = colors ?? (substrate: nil, stick: nil),
-        jImages = images ?? (substrate: nil, stick: nil),
-        substrate = AnalogJoystickSubstrate(diameter: diameters.substrate, color: jColors.substrate, image: jImages.substrate),
-        stick = AnalogJoystickStick(diameter: stickDiameter, color: jColors.stick, image: jImages.stick)
+    convenience init(diameters: (substrate: CGFloat, stick: CGFloat?), colors: (substrate: UIColor , stick: UIColor) = (substrate: .black , stick: .white) , images: (substrate: UIImage?, stick: UIImage?)? = nil) {
+        
+        let stickDiameter = diameters.stick ?? diameters.substrate * 0.6
+        let substrate = StickSubstrate(diameter: diameters.substrate, color: colors.substrate, image: images?.substrate)
+        let stick = Stick(diameter: stickDiameter, color: colors.stick, image: images?.stick)
+        
         self.init(substrate: substrate, stick: stick)
+        
+        self.colors = colors
+        self.images = images
     }
     
-    convenience init(diameter: CGFloat, colors: (substrate: UIColor?, stick: UIColor?)? = nil, images: (substrate: UIImage?, stick: UIImage?)? = nil) {
+    convenience init(diameter: CGFloat, colors: (substrate: UIColor , stick: UIColor) = (substrate: .black , stick: .white), images: (substrate: UIImage?, stick: UIImage?)? = nil) {
         self.init(diameters: (substrate: diameter, stick: nil), colors: colors, images: images)
     }
     
@@ -204,8 +225,8 @@ open class AnalogJoystick: SKNode {
     
     @objc func listen() {
         
-        if tracking {
-            trackingHandler?(data)
+        if moving {
+            onMove?(data)
         }
     }
     
@@ -213,8 +234,8 @@ open class AnalogJoystick: SKNode {
     open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         if let touch = touches.first, stick == atPoint(touch.location(in: self)) {
-            tracking = true
-            beginHandler?()
+            moving = true
+            onStart?()
         }
     }
     
@@ -223,15 +244,16 @@ open class AnalogJoystick: SKNode {
         for touch: AnyObject in touches {
             let location = touch.location(in: self)
             
-            guard tracking else {
+            guard moving else {
                 return
             }
             
             let maxDistantion = substrate.radius,
+                
             realDistantion = sqrt(pow(location.x, 2) + pow(location.y, 2)),
             needPosition = realDistantion <= maxDistantion ? CGPoint(x: location.x, y: location.y) : CGPoint(x: location.x / realDistantion * maxDistantion, y: location.y / realDistantion * maxDistantion)
             stick.position = needPosition
-            data = AnalogJoystickData(velocity: CGVector(dx: needPosition.x, dy: needPosition.y), angular: -atan2(needPosition.x, needPosition.y))
+            data = StickData(vector: CGVector(dx: needPosition.x, dy: needPosition.y), angular: -atan2(needPosition.x, needPosition.y))
         }
     }
     
@@ -243,20 +265,16 @@ open class AnalogJoystick: SKNode {
         resetStick()
     }
     
-    // CustomStringConvertible protocol
     open override var description: String {
-        return "AnalogJoystick(data: \(data), position: \(position))"
+        return "Joystick(data: \(data), position: \(position))"
     }
     
-    // private methods
     private func resetStick() {
-        tracking = false
-        let moveToBack = SKAction.move(to: CGPoint.zero, duration: TimeInterval(0.1))
-        moveToBack.timingMode = .easeOut
-        stick.run(moveToBack)
+        moving = false
+        let moveToCenter = SKAction.move(to: CGPoint.zero, duration: TimeInterval(0.1))
+        moveToCenter.timingMode = .easeOut
+        stick.run(moveToCenter)
         data.reset()
-        stopHandler?();
+        onEnd?();
     }
 }
-
-typealias 🕹 = AnalogJoystick

@@ -1,5 +1,5 @@
 //
-//  BaseScene.swift
+//  Scene
 //  gpktopdown
 //
 //  Created by Willie Liwa Johnson on 1/6/22.
@@ -9,7 +9,7 @@ import UIKit
 
 import SpriteKit
 
-class BaseScene: SKScene {
+class Scene: SKScene {
 
     var contentCreated = false
 

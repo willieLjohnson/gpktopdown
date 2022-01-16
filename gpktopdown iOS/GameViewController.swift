@@ -10,8 +10,11 @@ import SpriteKit
 import GameplayKit
 
 class GameViewController: UIViewController {
-    var scene: EntitiesScene!
-
+    var scene: MainScene!
+    
+    let agentsEditor = AgentsEditor(namedGoals: [])
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Present the scene
@@ -21,24 +24,23 @@ class GameViewController: UIViewController {
         skView.showsFPS = true
         skView.showsNodeCount = true
         
-        scene = EntitiesScene(size: skView.frame.size)
         
+        scene = MainScene(size: skView.frame.size)
         skView.presentScene(scene)
+        viewDidLayoutSubviews()
+        
     }
-
+    
     override var shouldAutorotate: Bool {
-        return true
+        return false
     }
-
+    
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            return .landscape
-        } else {
-            return .landscape
-        }
+        return .landscape
     }
-
+    
     override var prefersStatusBarHidden: Bool {
         return true
     }
 }
+
