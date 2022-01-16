@@ -11,6 +11,10 @@ import SpriteKit
 import GameplayKit
 
 class ControlComponent: GKComponent {
+    var cruiseControl: Bool = true
+    var cruiseAmount: CGFloat = 0.5
+    var previousDirection: CGVector = CGVector.zero
+    
     func touch(_ node: SKNode, location: CGPoint, joystick: AnalogJoystick?) {
         guard let entity = entity else { return }
         guard let visualComponent = entity.component(ofType: VisualComponent.self) else { return }
@@ -26,8 +30,21 @@ class ControlComponent: GKComponent {
         guard let entity = entity else { return }
         guard let visualComponent = entity.component(ofType: VisualComponent.self) else { return }
         
+        joystick.beginHandler = {
+            self.cruiseControl = false
+        }
+        
+        joystick.stopHandler = {
+            self.cruiseControl = true
+        }
+        
         joystick.trackingHandler = { data in
             visualComponent.accelerate(data.velocity)
+            self.previousDirection = data.velocity
+        }
+        
+        if cruiseControl {
+            visualComponent.accelerate(previousDirection * cruiseAmount)
         }
     }
 }

@@ -50,8 +50,9 @@ struct Useful {
         return CGPoint(x: dx, y: dy)
     }
     
-    static func generateCheckerboardImage(size: CGSize, color: UIColor = .white) -> UIImage {
+    static func generateCheckerboardImage(size: CGSize, color: UIColor = .white) -> (UIImage, [SKShapeNode]) {
         let renderer = UIGraphicsImageRenderer(size: size)
+        var nodes = [SKShapeNode]()
         let img = renderer.image { ctx in
             
             let cellSize = size * (1/4)
@@ -59,15 +60,22 @@ struct Useful {
             for row in 0 ... Int(cellSize.height) {
                 for col in 0 ... Int(cellSize.width) {
                     if (row + col) % 2 == 0 {
-                        let position = CGPoint(x: CGFloat(col), y: CGFloat(row))
-                        let randomSize = cellSize * CGFloat.random(in: 1.1...1.5)
-                        ctx.cgContext.setFillColor(color.withAlphaComponent(.random(in: 0.05...0.1)).cgColor)
-                        ctx.cgContext.fill(CGRect(x: position.x * cellSize.width, y: position.y * cellSize.height, width: randomSize.width, height: randomSize.height))
+                        let randomSize = cellSize * CGFloat.random(in: 1.1...2)
+                        let gridPosition = CGPoint(x: CGFloat(col), y: CGFloat(row))
+                        let cellRect = CGRect(x: gridPosition.x * cellSize.width, y: gridPosition.y * cellSize.height, width: randomSize.width, height: randomSize.height)
+                        let randomCellColor = color.withAlphaComponent(.random(in: 0.05...0.1))
+                        ctx.cgContext.setFillColor(randomCellColor.cgColor)
+                        ctx.cgContext.fill(cellRect)
+                        let node = SKShapeNode(rect: cellRect)
+                        node.name = "gridblock"
+                        node.fillColor = randomCellColor
+                        node.alpha = 0
+                        nodes.append(node)
                     }
                 }
             }
         }
-        return img
+        return (img, nodes)
     }
 }
 
@@ -195,6 +203,11 @@ public func + (left: CGVector, right: CGVector) -> CGVector {
     return CGVector(dx: left.dx + right.dx, dy: left.dy + right.dy)
 }
 
+
+public func * (vector: CGVector, scalar: CGFloat) -> CGVector {
+    return CGVector(dx: vector.dx * scalar, dy: vector.dy * scalar)
+}
+
 // MARK: CGPOINT
 
 public func + (left: CGPoint, right: CGPoint) -> CGPoint {
@@ -254,14 +267,6 @@ public func * (left: CGVector, right: CGVector) -> CGVector {
  */
 public func *= (left: inout CGVector, right: CGVector) {
     left = left * right
-}
-
-/**
- * Multiplies the x and y fields of a CGVector with the same scalar value and
- * returns the result as a new CGVector.
- */
-public func * (vector: CGVector, scalar: CGFloat) -> CGVector {
-    return CGVector(dx: vector.dx * scalar, dy: vector.dy * scalar)
 }
 
 /**

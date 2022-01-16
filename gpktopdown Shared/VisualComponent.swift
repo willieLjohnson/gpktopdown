@@ -79,6 +79,7 @@ class VisualComponent: GKComponent {
         } else {
             momentum = lerp(start: momentum, end: physicsBody.velocity, t: 0.1)
             acceleration = .zero
+            
         }
     }
 }

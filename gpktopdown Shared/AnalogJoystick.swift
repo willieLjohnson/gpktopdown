@@ -10,11 +10,13 @@ import SpriteKit
 //MARK: AnalogJoystickData
 public struct AnalogJoystickData: CustomStringConvertible {
     var velocity = CGVector.zero,
-    angular = CGFloat(0)
+    angular = CGFloat(0),
+    centered = false
     
     mutating func reset() {
         velocity = CGVector.zero
         angular = 0
+        centered = true
     }
     
     public var description: String {
@@ -128,9 +130,13 @@ open class AnalogJoystick: SKNode {
     var stopHandler: (() -> Void)?
     var substrate: AnalogJoystickSubstrate!
     var stick: AnalogJoystickStick!
+    var isTouched: Bool = false
     private var tracking = false
     private(set) var data = AnalogJoystickData()
     
+    var isCentered: Bool {
+        data.centered
+    }
     var disabled: Bool {
         get {
             return !isUserInteractionEnabled

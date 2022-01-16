@@ -35,9 +35,87 @@ class EntitiesScene: BaseScene {
         player.component(ofType: VisualComponent.self)!
     }
     
+
+    override func createSceneContents() {
+        generateBackgroundGrid()
+        setupUI()
+        
+        createPlayer()
+        createEnemies()
+        createBoss()
+    }
     
+    override func update(_ currentTime: TimeInterval) {
+        super.update(currentTime)
+        
+        player.update(deltaTime: deltaTime)
+        
+        playerControlComponent.handleJoystick(movePlayerStick)
+        intelligenceSystem.update(deltaTime: deltaTime)
+        
+        guard let playerPhysicsBody = playerVisualComponent.physicsBody else { return }
+        guard let camera = self.camera else { return }
+        
+        // Move cam to player
+        //        let duration = TimeInterval(0.4 * pow(0.9, abs(playerPhysicsBody.velocity.dx / 100) - 1) + 0.05)
+        //        let xOffsetExpo = CGFloat(0.4 * pow(0.9, -abs(playerPhysicsBody.velocity.dx) / 100 - 1) - 0.04)
+        //        let yOffsetExpo = CGFloat(0.2 * pow(0.9, -abs(playerPhysicsBody.velocity.dy) / 100 - 1) - 0.04)
+        //        let scaleExpo = CGFloat(0.001 * pow(0.9, -abs(playerPhysicsBody.velocity.dx) / 100  - 1) + 3.16)
+        //        let xOffset = xOffsetExpo.clamped(to: -1500...1500) * (playerPhysicsBody.velocity.dx > 0 ? 1 : -1)
+        //        let yOffset = yOffsetExpo.clamped(to: -1500...1500) * (playerPhysicsBody.velocity.dy > 0 ? 1 : -1)
+        //
+        //        let scale = scaleExpo.clamped(to: 3...5.5)
+        
+        //        camera.setScale(scale)
+        //CGPoint(x: playerVisualComponent.sprite.position.x + xOffset, y: playerVisualComponent.sprite.position.y + yOffset)
+//        camera.run(SKAction.move(to: playerVisualComponent.sprite.position, duration: 0.005))
+    
+        let playerSprite = playerVisualComponent.sprite
+        camera.position = playerSprite.position
+        
+        self.enumerateChildNodes(withName: "background", using: ({
+            (node, error) in
+            // 1
+            guard let node = node as? SKSpriteNode else { return }
+            
+            node.size.width += cos(currentTime)
+            node.size.height += sin(currentTime)
+
+
+            let limitX = self.backgroundGridSize.width - self.size.width
+            let limitY = self.backgroundGridSize.height - self.size.width
+            
+            var newPosition = node.position
+            
+            if playerPhysicsBody.velocity.dx > 0 && node.position.x < (playerSprite.position.x - limitX)  {
+                newPosition.x += self.backgroundGridSize.width
+            }
+            if playerPhysicsBody.velocity.dy > 0 && node.position.y < (playerSprite.position.y - limitY)  {
+                newPosition.y += self.backgroundGridSize.height
+            }
+            
+            if playerPhysicsBody.velocity.dx < 0 && node.position.x > (playerSprite.position.x + limitX)  {
+                newPosition.x -= self.backgroundGridSize.width
+            }
+            if playerPhysicsBody.velocity.dy < 0 && node.position.y > (playerSprite.position.y + limitY)  {
+                newPosition.y -= self.backgroundGridSize.height
+            }
+            
+            node.position = newPosition
+        }))
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first else { return }
+        let location = touch.location(in: self)
+        let node = atPoint(location)
+    }
+}
+
+// MARK: - Entitites scene methods
+private extension EntitiesScene {
     func generateBackgroundImage(color: UIColor = .black, result: @escaping (SKSpriteNode) -> Void) {
-        let generatedImage = Useful.generateCheckerboardImage(size: self.backgroundSize, color: color)
+        let (generatedImage, _) = Useful.generateCheckerboardImage(size: self.backgroundSize, color: color)
         let background = SKSpriteNode(texture: SKTexture(image: generatedImage))
         background.name = "background"
         background.size = self.backgroundSize
@@ -47,10 +125,9 @@ class EntitiesScene: BaseScene {
         }
     }
     
-    override func createSceneContents() {
+    func generateBackgroundGrid() {
         backgroundSize = CGSize(width: size.width, height: size.width)
 
-        var count = 0
         DispatchQueue.global(qos: .userInteractive).async {
             for x in 0...1 {
                 for y in 0...1 {
@@ -59,13 +136,14 @@ class EntitiesScene: BaseScene {
                         let yPosition = CGFloat(y) * self.backgroundSize.height
                         generatedBackground.position = CGPoint(x: xPosition, y: yPosition)
                         self.addChild(generatedBackground)
-                        count += 1
-                        print(count)
                     }
                 }
             }
         }
-        
+    }
+    
+    
+    func setupUI() {
         createLabel("■ Player: Visual, Attack, Control", color: SKColor.cyan, order: 0)
         createLabel("■ Boss: Visual, Attack, Intelligence", color: SKColor.magenta, order: 2)
         createLabel("■ Enemy: Visual, Intelligence", color: SKColor.yellow, order: 1)
@@ -79,12 +157,9 @@ class EntitiesScene: BaseScene {
         cam.zPosition = 2000
         self.camera = cam
         addChild(cam)
-        
-        createPlayer()
-        createEnemies()
-        createBoss()
     }
     
+
     
     func createPlayer() {
         player = GKEntity()
@@ -146,84 +221,5 @@ class EntitiesScene: BaseScene {
         let x = GKRandomDistribution(lowestValue: 50, highestValue: Int(frame.maxX) - 50).nextInt()
         let y = GKRandomDistribution(lowestValue: 50, highestValue: Int(frame.maxY) - 50).nextInt()
         return CGPoint(x: CGFloat(x), y: CGFloat(y))
-    }
-    
-    override func update(_ currentTime: TimeInterval) {
-        super.update(currentTime)
-        
-        player.update(deltaTime: deltaTime)
-        
-        playerControlComponent.handleJoystick(movePlayerStick)
-        intelligenceSystem.update(deltaTime: deltaTime)
-        
-        guard let playerPhysicsBody = playerVisualComponent.physicsBody else { return }
-        guard let camera = self.camera else { return }
-        
-        // Move cam to player
-        //        let duration = TimeInterval(0.4 * pow(0.9, abs(playerPhysicsBody.velocity.dx / 100) - 1) + 0.05)
-        //        let xOffsetExpo = CGFloat(0.4 * pow(0.9, -abs(playerPhysicsBody.velocity.dx) / 100 - 1) - 0.04)
-        //        let yOffsetExpo = CGFloat(0.2 * pow(0.9, -abs(playerPhysicsBody.velocity.dy) / 100 - 1) - 0.04)
-        //        let scaleExpo = CGFloat(0.001 * pow(0.9, -abs(playerPhysicsBody.velocity.dx) / 100  - 1) + 3.16)
-        //        let xOffset = xOffsetExpo.clamped(to: -1500...1500) * (playerPhysicsBody.velocity.dx > 0 ? 1 : -1)
-        //        let yOffset = yOffsetExpo.clamped(to: -1500...1500) * (playerPhysicsBody.velocity.dy > 0 ? 1 : -1)
-        //
-        //        let scale = scaleExpo.clamped(to: 3...5.5)
-        
-        //        camera.setScale(scale)
-        //CGPoint(x: playerVisualComponent.sprite.position.x + xOffset, y: playerVisualComponent.sprite.position.y + yOffset)
-//        camera.run(SKAction.move(to: playerVisualComponent.sprite.position, duration: 0.005))
-        
-        let playerSprite = playerVisualComponent.sprite
-        camera.position = playerSprite.position
-        
-        self.enumerateChildNodes(withName: "background", using: ({
-            (node, error) in
-            // 1
-            //            node.position.x += playerPhysicsBody.velocity.dx * 0.01 + cos(currentTime)
-            //            node.position.y += playerPhysicsBody.velocity.dy * 0.01 + sin(currentTime)
-            
-
-            let limitX = self.backgroundGridSize.width - self.size.width
-            let limitY = self.backgroundGridSize.height - self.size.width
-            
-            var newPosition = node.position
-            
-            if playerPhysicsBody.velocity.dx > 0 && node.position.x < (playerSprite.position.x - limitX)  {
-                newPosition.x += self.backgroundGridSize.width
-            }
-            if playerPhysicsBody.velocity.dy > 0 && node.position.y < (playerSprite.position.y - limitY)  {
-                newPosition.y += self.backgroundGridSize.height
-            }
-            
-            if playerPhysicsBody.velocity.dx < 0 && node.position.x > (playerSprite.position.x + limitX)  {
-                newPosition.x -= self.backgroundGridSize.width
-            }
-            if playerPhysicsBody.velocity.dy < 0 && node.position.y > (playerSprite.position.y + limitY)  {
-                newPosition.y -= self.backgroundGridSize.height
-            }
-            
-            node.position = newPosition
-            //
-            //            if playerSprite.position.y > (node.position.y + self.backgroundSize.height * 0.25 * self.gridCount) {
-            //                node.position.y += self.backgroundSize.height * self.gridCount
-            //            }
-            //
-            //
-            //            if playerPhysicsBody.velocity.dx < 0 || playerPhysicsBody.velocity.dy < 0 {
-            //                if node.position.x > self.backgroundSize.width / 2 + self.playerVisualComponent.sprite.position.x {
-            //                    node.position.x -= self.backgroundSize.width
-            //                }
-            //
-            //                if node.position.y > self.backgroundSize.height / 2 + self.playerVisualComponent.sprite.position.y {
-            //                    node.position.y -= self.backgroundSize.height
-            //                }
-            //            }
-        }))
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else { return }
-        let location = touch.location(in: self)
-        let node = atPoint(location)
     }
 }
